@@ -4,6 +4,8 @@ local type = type
 local xpcall = xpcall
 local string_lower = string.lower
 local lor = require("lor.index")
+local lua_next = next
+local json = require "cjson"
 
 
 local function load_plugin_api(plugin, dashboard_router, store)
@@ -106,6 +108,10 @@ return function(config, store)
         res:render("status")
     end)
 
+    dashboard_router:get("/headers", function(req, res, next)
+        res:render("headers")
+    end)
+
     dashboard_router:get("/monitor", function(req, res, next)
         res:render("monitor")
     end)
@@ -126,7 +132,23 @@ return function(config, store)
     dashboard_router:get("/redirect", function(req, res, next)
         res:render("redirect")
     end)
+    dashboard_router:get("/dynamic_upstream", function(req, res, next)
+        local upstream = require "ngx.upstream"
 
+        local upstream_list = upstream.get_upstreams()
+        local empty_table = false
+
+        if lua_next(upstream_list) == nil then
+            empty_table = true
+        end
+
+        local every_upstream_config = {}
+        for _, v in ipairs(upstream_list) do
+            every_upstream_config[v] = upstream.get_servers(v)
+        end
+
+        res:render("dynamic_upstream",{upstreams=upstream_list, empty_table = empty_table, every_upstream_config = json.encode(every_upstream_config)})
+    end)
     dashboard_router:get("/rate_limiting", function(req, res, next)
         res:render("rate_limiting")
     end)
@@ -143,6 +165,11 @@ return function(config, store)
 
     dashboard_router:get("/key_auth", function(req, res, next)
         res:render("key_auth/key_auth")
+    end)
+
+    -- JWT AUTH
+    dashboard_router:get("/jwt_auth", function(req, res, next)
+        res:render("jwt_auth/jwt_auth")
     end)
 
     dashboard_router:get("/waf", function(req, res, next)

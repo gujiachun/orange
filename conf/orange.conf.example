@@ -1,7 +1,9 @@
 {
     "plugins": [
         "stat",
+        "headers",
         "monitor",
+        "dynamic_upstream",
         "redirect",
         "rewrite",
         "rate_limiting",
@@ -22,6 +24,7 @@
             "database": "orange",
             "user": "root",
             "password": "",
+            "charset": "utf8",
             "max_packet_size": 1048576
         },
         "pool_config": {
